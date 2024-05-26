@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Blogs</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+        .left-part {
+            background-color: #e9ecef; /* Light gray background for the left part */
+            padding: 20px;
+        }
+        .main-content {
+            background-color: #f8f9fa; /* Slightly lighter gray background for the main content */
+            padding: 20px;
+        }
+        .container {
+            padding-top: 20px; /* Add padding to the top of the container */
+            padding-bottom: 20px; /* Add padding to the bottom of the container */
+        }
+        .navbar {
+            margin-bottom: 20px; /* Add margin to the bottom of the navbar */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-3">
+                <div class="left-part">
+                    <!-- Left Part (25%) -->
+                    <h2>Profile</h2>
+                    <div class="card">
+                        <img src="" class="card-img-top" alt="..." id="imgsr">
+                        <div class="card-body">
+                            <h5 class="card-title" id="name">Card title</h5>
+                            <p class="card-text" id="bio">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">An item</li>
+                            <li class="list-group-item">A second item</li>
+                            <li class="list-group-item">A third item</li>
+                        </ul>
+                        <div class="card-body">
+                            <a href="#" class="card-link">Card link</a>
+                            <a href="#" class="card-link">Another link</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-9">
+                <div class="main-content">
+                    <!-- Main Content (75%) -->
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                        <a class="navbar-brand" href="#">MyBlogs</a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav mr-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Create</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Add Friend</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Private Blog</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Public Blog</a>
+                                </li>
+                            </ul>
+                            <form class="form-inline my-2 my-lg-0">
+                                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                            </form>
+                        </div>
+                    </nav>
+                    <h1>Main Content</h1>
+                    <p>This part occupies 75% of the container width. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor eros non libero consequat, in faucibus nunc volutpat. Integer id viverra felis. Suspendisse potenti. Vestibulum sollicitudin elit et tincidunt posuere. Duis a ex ac nunc dictum mattis. In non lectus magna. Cras vitae libero quis est dignissim dictum. Duis eu arcu nec eros hendrerit maximus. Curabitur tempus eleifend dolor, eget feugiat nulla ullamcorper sed. Suspendisse potenti. In nec velit condimentum, tristique nisi at, viverra sapien. Sed eu eros accumsan, dapibus libero eget, pellentesque nunc. Suspendisse potenti. Quisque tempus id ipsum id pharetra. Curabitur nec nisl in purus gravida fringilla ut nec metus. Ut bibendum tincidunt ligula. Integer at gravida justo, vitae aliquet metus.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script>
+const loadBitch = () =>{
+        fetch("/user/profile")
+    .then(res => res.json())
+    .then(res => {
+       // name,bio,imgsr
+       const profile = res.result.profile;
+       document.getElementById("name").innerText = profile.username;
+       document.getElementById("bio").innerText = profile.bio;
+       const img = profile.profilePicture ? profile.profilePicture : "Public/img/users/default.jpg";
+       document.getElementById("imgsr").src = img;
+    })
+    .catch(err => console.error(err));
+}
+window.onload = loadBitch;
+
+</script>
+</body>
+</html>
