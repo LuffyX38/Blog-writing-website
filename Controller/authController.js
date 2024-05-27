@@ -169,10 +169,8 @@ exports.isSignedIn = async (req, res, next) => {
         req.cookies.jwt,
         process.env.JWT_SECRET
       );
-      const [result] = await pool.query(
-        "SELECT id,username,email,profilePicture,backgroundPicture,bio,birthdate FROM user WHERE id = ?",
-        [decoded.id]
-      );
+      const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate,count(b.blog) AS blog_count FROM user AS u left join blogs AS b on u.id = b.bloogger_id GROUP BY u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate;`;
+      const [result] = await pool.query(q,[decoded.id]);
       req.user = result[0];
       return next();
     } catch (err) {

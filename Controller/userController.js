@@ -78,6 +78,13 @@ exports.resizeUploadedImage = async (req, res, next) => {
         .toFile(`Public/img/users/${profilePic.filename}`);
 
       if (profilePic.size > 5242880) {
+        fs.unlink(
+          `Public/img/users/${req.files.profilePicture[0].filename}`,
+          (err) => {
+            if (err) throw err;
+            console.log("pfp unlinked");
+          });
+        console.log("unlinked due to size is too big");
         throwsError(
           "Profile image size is too big, image can be of size 5Mb",
           400
@@ -166,10 +173,14 @@ exports.updateProfile = async (req, res) => {
         ]);
       }
       if (username) {
-        await pool.query(`UPDATE user SET username = ? WHERE id = ?`, [
+        try {
+          await pool.query(`UPDATE user SET username = ? WHERE id = ?`, [
           username,
           req.user.id,
         ]);
+        } catch (err) {
+          errMessage("Username already taken, try something else", err, res, 400);
+        }
       }
       if (await req.profilePictureUrl) {
         const url = req.profilePictureUrl;

@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Blogs</title>
+    <title>Create blog</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         
+
         .left-part {
             background-color: #e9ecef; /* Light gray background for the left part */
             padding: 20px;
@@ -27,7 +28,7 @@
 <body>
     <div class="container">
         <div class="row">
-            <div class="col-12 col-md-3">
+           <div class="col-12 col-md-3">
                 <div class="left-part">
                     <!-- Left Part (25%) -->
                     <h2>Profile</h2>
@@ -39,7 +40,7 @@
                         </div>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item" id="blogs"></li>
-                                                     <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
+                            <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
 </li>
                             <li class="list-group-item"><a href="#" class="text-decoration-none text-body">Friends</a></li>
                         </ul>
@@ -54,14 +55,14 @@
                 <div class="main-content">
                     <!-- Main Content (75%) -->
                     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                        <a class="navbar-brand" href="#">MyBlogs</a>
+                        <a class="navbar-brand" href="/main">MyBlogs</a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
                         </button>
                         <div class="collapse navbar-collapse" id="navbarNav">
                             <ul class="navbar-nav mr-auto">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="/create">Create</a>
+                                    <a class="nav-link" href="#">Create</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#">Add Friend</a>
@@ -79,8 +80,29 @@
                             </form>
                         </div>
                     </nav>
-                    <h1>Main Content</h1>
-                    <div id="blogsHere"></div>
+                    <h1>Create blog</h1>
+                    <form id="thisForm">
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1">Blog Title</label>
+                            <input type="text" class="form-control" id="title" placeholder="Blog title here..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exampleFormControlTextarea1">Blog goes here ⬇️</label>
+                            <textarea class="form-control" id="blog" rows="5" placeholder="Write your blog here" required></textarea>
+                        </div>
+
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="status">
+                            <label class="form-check-label" for="status">Private</label>
+                        </div>
+
+                        <div class="d-flex justify-content-center">
+                            <button type="submit" class="btn btn-outline-secondary">Publish blog</button>
+                        </div>
+                    </form>
+                    <br>
+                    <h4 id="msg"></h4>
                 </div>
             </div>
         </div>
@@ -88,50 +110,52 @@
 
     <!-- Bootstrap JS, Popper.js, and jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script>
-    fetch("/user/profile")
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+            fetch("/user/profile")
     .then(res => res.json())
     .then(res => {
        // name,bio,imgsr
+
        const profile = res.result.profile;
-       document.getElementById("blogs").innerText = `Blogs ${profile.blog_count}`;
+                     document.getElementById("blogs").innerText = `Blogs ${profile.blog_count}`;
+
        document.getElementById("name").innerText = profile.username;
        document.getElementById("bio").innerText = profile.bio;
        const img = profile.profilePicture ? profile.profilePicture : "Public/img/users/default.jpg";
        document.getElementById("imgsr").src = img;
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error(err))
 
-    fetch("/api/v1/get-blog")
-    .then(res => res.json())
-    .then(res => {
-        console.log(res.result.results);
-        res.result.result.forEach(item =>{
-            const blog_head = item.blog_head ? item.blog_head : "🔥🔥🔥";
-            document.getElementById("blogsHere").innerHTML += 
-               `<br><div class="card text-center">
-                <div class="card-header">
-                    ${item.blog_by}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">${blog_head}</h5>
-                    <p class="card-text">${item.blog}</p>
-                </div>
-                <div class="card-footer text-body-secondary">
-                    ${item.created_at}
-                </div>
-                </div>`
+        document.getElementById("thisForm").addEventListener("submit", e =>{
+            e.preventDefault();
+            const title = document.getElementById("title").value;
+            const blog = document.getElementById("blog").value;
+            const status = document.getElementById("status").checked ? "private" : "public" ;
+
+
+            let obj = {
+                blog_head:title,
+                available_to:status,
+                blog:blog
+            }
+            fetch("/api/v1/create-blog",{
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify(obj)
+            })
+            .then(res => res.json())
+            .then(res => {
+                document.getElementById("msg").innerText = res.message;
+            }).catch(err => console.log(err));
+        }).finally(()=>{
+            document.getElementById("title").value = "";
+                document.getElementById("blog").value = "";
+                document.getElementById("status").checked = false;
         })
-    })
-    .catch(err => console.error(err));
-
-
- 
-
-
-</script>
+    </script>
 </body>
 </html>
