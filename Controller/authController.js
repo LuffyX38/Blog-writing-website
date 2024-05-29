@@ -73,7 +73,7 @@ const createPasswordResetToken = async (email, res) => {
   return resetToken;
 };
 
-exports.createPassword = async (password, cpassword) => {
+const createPassword = async (password, cpassword) => {
   if (password.length < 8) {
     throwsError("Password should be at least 8 characters long", 400);
   }
@@ -111,6 +111,7 @@ exports.signup = async (req, res) => {
 
     return successMessage("User registered", result.insertId, res, 200);
   } catch (error) {
+    console.log(error);
     const statusCode = error.statusCode || 500;
     return errMessage(error.message, error, res, statusCode);
   }
@@ -133,6 +134,7 @@ exports.signin = async (req, res) => {
       throwsError("Email or password is incorred..", 403);
     }
     const jwt_token = jwtToken(result[0].id);
+    console.log(jwt_token);
     setCookie(res, "jwt", jwt_token);
     const user = { ...result[0] };
 
@@ -140,6 +142,7 @@ exports.signin = async (req, res) => {
     delete user.passwordResetToken;
     delete user.passwordResetExpires;
     delete user.passwordChangedAt;
+    // res.status(200).redirect("/main");
 
     return successMessage(
       "User has successfully logged in",
@@ -153,12 +156,15 @@ exports.signin = async (req, res) => {
   }
 };
 
+
+
 exports.signout = (req, res) => {
   res.cookie("jwt", "logout", {
     expires: new Date(Date.now() + 2 * 1000),
     httpOnly: true,
   });
-  return successMessage("successfully logged out", [], res, 200);
+  // return successMessage("successfully logged out", [], res, 200);
+  res.status(200).redirect("/main");
 };
 
 //to be finished letter
@@ -169,10 +175,15 @@ exports.isSignedIn = async (req, res, next) => {
         req.cookies.jwt,
         process.env.JWT_SECRET
       );
-      const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate,count(b.blog) AS blog_count FROM user AS u left join blogs AS b on u.id = b.bloogger_id GROUP BY u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate;`;
-      const [result] = await pool.query(q,[decoded.id]);
+      console.log("Did ", decoded.id);
+      const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,
+                u.birthdate,count(b.blog) AS blog_count FROM user AS u left join blogs AS b on
+                u.id = b.bloogger_id and b.delete_blog = false where u.id = ? GROUP BY u.id,u.username,
+                u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate`;
+      
+      const [result] = await pool.query(q, [decoded.id]);
       req.user = result[0];
-      return next();
+      return next();p
     } catch (err) {
       console.log(err);
       req.user = undefined;

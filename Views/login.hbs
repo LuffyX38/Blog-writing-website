@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update profile</title>
+    <title>Login</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    
     <style>
         
         .left-part {
@@ -40,14 +39,10 @@
                         </div>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item" id="blogs"></li>
-                                                       <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
-</li>
+                            <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
+                            </li>
                             <li class="list-group-item"><a href="#" class="text-decoration-none text-body">Friends</a></li>
-                        </ul>
-                        <div class="card-body">
-                <a href="/login" class="card-link">Login</a>
-                <a href="/main" class="card-link" onclick="logout()">logout</a>
-              </div>
+                        </ul> 
                     </div>
                 </div>
             </div>
@@ -80,31 +75,29 @@
                             </form>
                         </div>
                     </nav>
-                    <h1>Update your profile</h1><br>
-                  
-                        <form id="myForm">
-                            <div class="mb-3">
-                                <label for="exampleFormControlInput1" class="form-label">Change Username</label>
-                                <input type="text" class="form-control" id="updateName" placeholder="Username here">
-                                </div>
-                                <div class="mb-3">
-                                <label for="exampleFormControlTextarea1" class="form-label">New bio</label>
-                                <textarea class="form-control" rows="3" id="updateBio"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                <label for="exampleFormControlTextarea1" class="form-label">Profile image</label><br>
-                                <input type="file"  id="ppi"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                <label for="exampleFormControlTextarea1" class="form-label" >Background image</label><br>
-                                <input type="file" id="bgi"></textarea>
-                                </div>
-                                <div class="d-flex justify-content-center">
-                            <button type="submit" class="btn btn-outline-secondary">Update profile</button>
-                        </div>
-                        </form>
-                        <h4 id="msghre" style="display: none;">Loading...</h4>
-                        <h4 id="msg"></h4>
+                    <h1>Login</h1>
+          {{!--     "username":"admin",
+                     "email":"admin",
+                      "password":"", 
+                      "cpassword":"admin123"--}}
+                        <form id="thisForm">
+
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email </label>
+    <input type="text" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+  </div>
+<div class="card-body">
+      <button type="submit" class="btn btn-primary">Login</button>
+        <a href="/register" class="card-link">Create account</a>
+</div>
+  
+</form>
+                    <h4 id="msg"></h4>
+                </div>
             </div>
         </div>
     </div>
@@ -115,11 +108,6 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <script>
-     const logout = () => {
-        fetch("/api/v1/auth/signout");
-    }
-
-
    const loadProfile = () =>{
      fetch("/user/profile")
     .then(res => res.json())
@@ -135,64 +123,37 @@
     .catch(err => console.error(err));
    }
 
-
-    //ppi,bgi,updateBio,updateName
-    //{ username, profilePicture, backgroundPicture, bio, birthdate }
-
-    document.getElementById("myForm").addEventListener("submit",e=>{
-        document.getElementById("msghre").style.display = "block";
-        document.getElementById("msg").innerText = "";
-
+    document.getElementById("thisForm").addEventListener("submit",e=>{
         e.preventDefault();
-        const ppi = document.getElementById("ppi").files[0];
-        const bgi = document.getElementById("bgi").files[0];
-        const name = document.getElementById("updateName").value;
-        const bio = document.getElementById("updateBio").value;
-        const formData = new FormData();
-        formData.append("username",name);
-        formData.append("bio",bio);
+        document.getElementById("msg").value = "";
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("pwd").value;
 
-        if(ppi){
-            formData.append("profilePicture",ppi);
-        }
-        if(bgi){
-            formData.append("backgroundPicture",bgi);
-        }
+        let obj = { email, password };
+        //console.log(obj);
 
-        fetch("/user/updateProfile",{
-            method:"PATCH",
-            body:formData
+        fetch("/api/v1/auth/signin",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(obj)
         })
         .then(res => res.json())
         .then(res => {
-            document.getElementById("msg").innerText = res.message;
+                document.getElementById("msg").innerText = res.message;
         })
-        .catch(err => console.error(err))
+        .catch(err => console.log(err))
         .finally(()=>{
-            document.getElementById("msghre").style.display = "none";
-            document.getElementById("updateName").value = "";
-            document.getElementById("updateBio").value = "";
-            document.getElementById("ppi").value = "";
-            document.getElementById("bgi").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("pwd").value = "";
             setTimeout(()=>{
                 document.getElementById("msg").innerText = "";
-            },2000);
+            },5000);
             loadProfile();
-
-        })
-
-        console.log(name,bio);
-        
-        
-    })
-
-
-    
-
-/**/
- 
+        });
+    });
 loadProfile();
-
 </script>
 </body>
 </html>

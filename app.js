@@ -8,6 +8,7 @@ const blogRoute = require("./Route/blogRoute");
 const authRoute = require("./Route/authRoute");
 const userRoute = require("./Route/userRoute");
 const pagesRoute = require("./Route/pagesRoute");
+const friendRoute = require("./Route/friendRoute");
 
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/v1", blogRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/", pagesRoute);
 app.use("/user", userRoute);
+app.use("/", friendRoute);
 
 app.use("*", (req, res) => {
   res.status(404).json({ status: "failed", message: "Page not found" });

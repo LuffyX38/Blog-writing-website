@@ -41,14 +41,14 @@
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item" id="blogs"></li>
                             <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
-</li>
+                            </li>
                             <li class="list-group-item"><a href="#" class="text-decoration-none text-body">Friends</a></li>
                         </ul>
-                        <div class="card-body">
-                            <a href="#" class="card-link">Card link</a>
-                            <a href="#" class="card-link">Another link</a>
-                        </div>
-                    </div>
+                       <div class="card-body">
+                <a href="/login" class="card-link">Login</a>
+                <a href="/create" class="card-link" onclick="logout()">logout</a>
+              </div>
+            </div>
                 </div>
             </div>
             <div class="col-12 col-md-9">
@@ -62,7 +62,7 @@
                         <div class="collapse navbar-collapse" id="navbarNav">
                             <ul class="navbar-nav mr-auto">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#">Create</a>
+                                    <a class="nav-link" href="/create">Create</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="#">Add Friend</a>
@@ -113,7 +113,13 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-            fetch("/user/profile")
+          const logout = () => {
+        fetch("/api/v1/auth/signout");
+    }
+
+
+
+    fetch("/user/profile")
     .then(res => res.json())
     .then(res => {
        // name,bio,imgsr
@@ -153,8 +159,9 @@
             }).catch(err => console.log(err));
         }).finally(()=>{
             document.getElementById("title").value = "";
-                document.getElementById("blog").value = "";
-                document.getElementById("status").checked = false;
+            document.getElementById("blog").value = "";
+            document.getElementById("status").checked = false;
+              
         })
     </script>
 </body>

@@ -81,7 +81,6 @@ exports.getBlogs = async (req, res) => {
 
 exports.deleteBlog = async (req, res) => {
   const { blog_id } = req.body;
-
   const q = `UPDATE blogs
              SET delete_blog = true
              WHERE blog_id = ? AND delete_blog = false`;
@@ -94,3 +93,20 @@ exports.deleteBlog = async (req, res) => {
   }
 };
 
+exports.getMyBlogs = async (req, res) => {
+  try {
+    if (req.user) {
+      const q = `SELECT * FROM blogs WHERE bloogger_id = ? AND delete_blog = false`;
+      const [result] = await pool.query(q, [req.user.id]);
+      if (!result.length) {
+        return successMessage("No posts", [], res, 200);
+      }
+      return successMessage("Success", result, res, 200);
+    } else {
+      return throwsError(`Your'e not logged in`, 203);
+    }
+  } catch (err) {
+    console.log(err);
+    errMessage(err.message, err, res, err.statusCode);
+  }
+}

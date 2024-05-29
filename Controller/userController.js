@@ -7,6 +7,17 @@ const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const authController = require(`${__dirname}/authController`);
 
+const createPassword = async (password, cpassword) => {
+  if (password.length < 8) {
+    throwsError("Password should be at least 8 characters long", 400);
+  }
+  if (password !== cpassword || !password) {
+    throwsError("Passwords are not matching", 400);
+  }
+  const hashedPassword = await bcrypt.hash(password, 8);
+  return hashedPassword;
+};
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -83,7 +94,8 @@ exports.resizeUploadedImage = async (req, res, next) => {
           (err) => {
             if (err) throw err;
             console.log("pfp unlinked");
-          });
+          }
+        );
         console.log("unlinked due to size is too big");
         throwsError(
           "Profile image size is too big, image can be of size 5Mb",
@@ -175,11 +187,16 @@ exports.updateProfile = async (req, res) => {
       if (username) {
         try {
           await pool.query(`UPDATE user SET username = ? WHERE id = ?`, [
-          username,
-          req.user.id,
-        ]);
+            username,
+            req.user.id,
+          ]);
         } catch (err) {
-          errMessage("Username already taken, try something else", err, res, 400);
+          errMessage(
+            "Username already taken, try something else",
+            err,
+            res,
+            400
+          );
         }
       }
       if (await req.profilePictureUrl) {
@@ -234,6 +251,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 exports.profile = async (req, res) => {
+  console.log(req.user," from middleware")
   try {
     if (req.user) {
       successMessage("Your'e logged in", { profile: req.user }, res, 200);
@@ -257,7 +275,7 @@ exports.updateCurrentPassword = async (req, res) => {
     if (!(await bcrypt.compare(password, result[0].password))) {
       throwsError("Old password is wrong", 400);
     }
-    const hashedPassword = await authController.createPassword(
+    const hashedPassword = await createPassword(
       newPassword,
       confirmNewPassword
     );

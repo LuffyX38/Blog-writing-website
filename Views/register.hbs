@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update profile</title>
+    <title>Register</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    
     <style>
         
         .left-part {
@@ -40,14 +39,15 @@
                         </div>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item" id="blogs"></li>
-                                                       <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
+                                                     <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
 </li>
                             <li class="list-group-item"><a href="#" class="text-decoration-none text-body">Friends</a></li>
                         </ul>
                         <div class="card-body">
-                <a href="/login" class="card-link">Login</a>
-                <a href="/main" class="card-link" onclick="logout()">logout</a>
-              </div>
+                            <a href="/login" class="card-link">login</a>
+
+                            <a href="/main" class="card-link" onclick="logout()">logout</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                 <div class="main-content">
                     <!-- Main Content (75%) -->
                     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                        <a class="navbar-brand" href="/main">MyBlogs</a>
+                        <a class="navbar-brand" href="#">MyBlogs</a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
                         </button>
@@ -80,31 +80,36 @@
                             </form>
                         </div>
                     </nav>
-                    <h1>Update your profile</h1><br>
-                  
-                        <form id="myForm">
-                            <div class="mb-3">
-                                <label for="exampleFormControlInput1" class="form-label">Change Username</label>
-                                <input type="text" class="form-control" id="updateName" placeholder="Username here">
-                                </div>
-                                <div class="mb-3">
-                                <label for="exampleFormControlTextarea1" class="form-label">New bio</label>
-                                <textarea class="form-control" rows="3" id="updateBio"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                <label for="exampleFormControlTextarea1" class="form-label">Profile image</label><br>
-                                <input type="file"  id="ppi"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                <label for="exampleFormControlTextarea1" class="form-label" >Background image</label><br>
-                                <input type="file" id="bgi"></textarea>
-                                </div>
-                                <div class="d-flex justify-content-center">
-                            <button type="submit" class="btn btn-outline-secondary">Update profile</button>
-                        </div>
-                        </form>
-                        <h4 id="msghre" style="display: none;">Loading...</h4>
-                        <h4 id="msg"></h4>
+                    <h1>Register</h1>
+          {{!--     "username":"admin",
+                     "email":"admin",
+                      "password":"", 
+                      "cpassword":"admin123"--}}
+                        <form id="thisForm">
+  <div class="form-group">
+    <label for="exampleInputEmail1">Username </label>
+    <input type="text" class="form-control" id="usr" aria-describedby="emailHelp" placeholder="Enter username">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email </label>
+    <input type="text" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Confirm password</label>
+    <input type="password" class="form-control" id="cpwd" placeholder="Enter confirm password">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+                    <h4 id="msg"></h4>
+
+
+
+                </div>
             </div>
         </div>
     </div>
@@ -120,8 +125,7 @@
     }
 
 
-   const loadProfile = () =>{
-     fetch("/user/profile")
+    fetch("/user/profile")
     .then(res => res.json())
     .then(res => {
        // name,bio,imgsr
@@ -133,65 +137,45 @@
        document.getElementById("imgsr").src = img;
     })
     .catch(err => console.error(err));
-   }
 
-
-    //ppi,bgi,updateBio,updateName
-    //{ username, profilePicture, backgroundPicture, bio, birthdate }
-
-    document.getElementById("myForm").addEventListener("submit",e=>{
-        document.getElementById("msghre").style.display = "block";
-        document.getElementById("msg").innerText = "";
-
+    document.getElementById("thisForm").addEventListener("submit",e=>{
         e.preventDefault();
-        const ppi = document.getElementById("ppi").files[0];
-        const bgi = document.getElementById("bgi").files[0];
-        const name = document.getElementById("updateName").value;
-        const bio = document.getElementById("updateBio").value;
-        const formData = new FormData();
-        formData.append("username",name);
-        formData.append("bio",bio);
+        document.getElementById("msg").value = "";
+        const username = document.getElementById("usr").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("pwd").value;
+        const cpassword = document.getElementById("cpwd").value;
 
-        if(ppi){
-            formData.append("profilePicture",ppi);
-        }
-        if(bgi){
-            formData.append("backgroundPicture",bgi);
-        }
+        let obj = { username, email, password, cpassword };
+        //console.log(obj);
 
-        fetch("/user/updateProfile",{
-            method:"PATCH",
-            body:formData
+        fetch("/api/v1/auth/signup",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(obj)
         })
         .then(res => res.json())
         .then(res => {
-            document.getElementById("msg").innerText = res.message;
+                document.getElementById("msg").innerText = res.message;
         })
-        .catch(err => console.error(err))
+        .catch(err => console.log(err))
         .finally(()=>{
-            document.getElementById("msghre").style.display = "none";
-            document.getElementById("updateName").value = "";
-            document.getElementById("updateBio").value = "";
-            document.getElementById("ppi").value = "";
-            document.getElementById("bgi").value = "";
+            document.getElementById("usr").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("pwd").value = "";
+            document.getElementById("cpwd").value = "";
             setTimeout(()=>{
                 document.getElementById("msg").innerText = "";
-            },2000);
-            loadProfile();
-
+            },5000);
         })
 
-        console.log(name,bio);
-        
         
     })
 
-
-    
-
-/**/
  
-loadProfile();
+
 
 </script>
 </body>
