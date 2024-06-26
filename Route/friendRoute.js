@@ -2,7 +2,8 @@ const router = require("express").Router();
 const authController = require("../Controller/authController");
 const friendController = require("../Controller/friendController");
 
-router.route("/all-users").get(authController.isSignedIn, friendController.users);
+// router.route("/all-users").get(authController.isSignedIn, friendController.users);
+router.route("/all-users").post(authController.isSignedIn, friendController.users);
 
 router.route("/send-friend-request").post(authController.isSignedIn, friendController.sendFriendRequest);
 

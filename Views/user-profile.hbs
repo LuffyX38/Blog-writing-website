@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Blogs</title>
+    <title>User profile</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         
@@ -41,7 +41,7 @@
                             <li class="list-group-item" id="blogs" onclick="myPosts()" role="button">My posts</li>
                             <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
 </li>
-                            <li class="list-group-item"><a href="requests" class="text-decoration-none text-body">Friends</a></li>
+                            <li class="list-group-item"><a href="#" class="text-decoration-none text-body">Friends</a></li>
                         </ul>
              <div class="card-body">
                 <a href="/login" class="card-link">Login</a>
@@ -79,8 +79,25 @@
                             </form>
                         </div>
                     </nav>
-                    <h1>Main Content</h1>
-                    <div id="blogsHere"></div>
+                    <div >
+
+                        {{!-- <h1>Main content</h1> --}}
+                        <div class="card text-center">
+ 
+  <div class="card-body">
+    <h5 class="card-title" id="uname"></h5>
+    {{!-- <img src="" alt="" id="uimg"> --}}
+    <div class="text-center">
+        <img src="..." class="img-thumbnail" alt="..." id="uimg">
+    </div>
+
+    <p class="card-text" id="ubio"></p>
+    <div id="reqBtn"></div>
+  </div>
+  
+</div>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -116,32 +133,46 @@
     })
     .catch(err => console.error(err));
 
-    fetch("/api/v1/get-blog")
+
+    fetch(`${window.location.pathname}/userInfo`)
     .then(res => res.json())
     .then(res => {
-        console.log(res.result.results);
-        res.result.result.forEach(item =>{
-            const blog_head = item.blog_head ? item.blog_head : "🔥🔥🔥";
-            document.getElementById("blogsHere").innerHTML += 
-               `<br><div class="card text-center">
-                <div class="card-header">
-                    ${item.blog_by}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">${blog_head}</h5>
-                    <p class="card-text">${item.blog}</p>
-                </div>
-                <div class="card-footer text-body-secondary">
-                    ${item.created_at}
-                </div>
-                </div>`
-        })
+       // console.log(res);
+        console.log("user info",res);
+        const imgSrc = res.result[0].profilePicture ? res.result[0].profilePicture : "http://res.cloudinary.com/dfxohnig6/image/upload/v1716905965/fa3btlium1l1xgbqw1fi.jpg";
+        document.getElementById("uimg").src = imgSrc;
+        document.getElementById("ubio").innerText = res.result[0].bio;
+        document.getElementById("uname").innerText = res.result[0].username;
+        document.getElementById("reqBtn").innerHTML = 
+        `
+        <button class="btn btn-primary" onclick="sendReq(${res.result[0].id})" id="thisBtn">Send friend request</button>
+        `;
     })
-    .catch(err => console.error(err));
+    .catch(err => console.log(err));
 
 
- 
 
+    //working befriend me
+
+    const sendReq = (id) =>{
+        let obj = {
+            user_id:id
+        };
+        console.log(obj);
+        fetch("/send-friend-request",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify(obj)
+        })
+        .then(res => res.json())
+        .then(res => {
+            document.getElementById("thisBtn").innerText = res.message;
+        })
+        .catch(err => console.log(err));
+    }
+    
 
 </script>
 </body>

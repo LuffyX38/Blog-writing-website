@@ -5,7 +5,7 @@ const authController = require("../Controller/authController");
 router.route("/profile").get(
   authController.isSignedIn,
   (req, res, next) => {
-    console.log(req.user);
+    // console.log(req.user);
    
     if (!req.user) {
       req.user = {

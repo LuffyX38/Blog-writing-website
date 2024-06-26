@@ -8,8 +8,10 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
 });
 
+//get all users
 exports.users = async (req, res) => {
   try {
+    const { loadCount } = req.body;
     if (!req.user) {
       //id,username,email,profilePicture,backgroundPicture
       const [user] = await pool.query(
@@ -22,8 +24,8 @@ exports.users = async (req, res) => {
         200
       );
     }
-    const q = `SELECT id,username,email,profilePicture,backgroundPicture FROM user WHERE id != ?`;
-    const [user] = await pool.query(q, [req.user.id]);
+    const q = `SELECT id,username,email,profilePicture,backgroundPicture FROM user WHERE id != ? LIMIT 3 offset ?`;
+    const [user] = await pool.query(q, [req.user.id, loadCount]);
     sendMsg.successMessage(
       "Success",
       { results: user.length, users: user },
@@ -35,6 +37,7 @@ exports.users = async (req, res) => {
   }
 };
 
+//send friend request
 exports.sendFriendRequest = async (req, res) => {
   try {
     if (!req.user) {
@@ -42,7 +45,7 @@ exports.sendFriendRequest = async (req, res) => {
     }
     const my_id = req.user.id;
     const { user_id } = req.body;
-
+    console.log(user_id);
     if (!user_id || my_id === user_id) {
       return sendMsg.throwsError("Invalid id, or no id posted", 400);
     }
@@ -61,7 +64,7 @@ exports.sendFriendRequest = async (req, res) => {
 
     //checks if req is pending
     const q1 = `SELECT * FROM friend_request WHERE req_by = ? AND req_to = ? AND status = "pending"`;
-    const [user1] = await pool.query(q, [req.user.id, user_id]);
+    const [user1] = await pool.query(q1, [req.user.id, user_id]);
     if (user1.length) {
       return sendMsg.successMessage("Request already sent", [], res, 200);
     }
@@ -85,6 +88,7 @@ exports.sendFriendRequest = async (req, res) => {
   }
 };
 
+//check all pending request
 exports.checkPendingRequest = async (req, res) => {
   try {
     if (!req.user)
@@ -94,7 +98,7 @@ exports.checkPendingRequest = async (req, res) => {
       u.profilePicture,u.backgroundPicture,u.id
       FROM friend_request as f
       inner join user as u on f.req_by = u.id
-      where f.req_to = ?`;
+      where f.req_to = ? and f.status = "pending"`;
 
     const [result] = await pool.query(q, [req.user.id]);
     sendMsg.successMessage(
@@ -109,6 +113,7 @@ exports.checkPendingRequest = async (req, res) => {
   }
 };
 
+//change request status
 exports.changeRequestStatus = async (req, res) => {
   if (!req.user)
     return sendMsg.successMessage(`Your'e not logged in!!!!!`, [], res, 203);
@@ -116,7 +121,8 @@ exports.changeRequestStatus = async (req, res) => {
     const { status, req_id } = req.body;
 
     if (status === "rejected") {
-      await pool.query(`DELETE FROM friend_request WHERE req_id = ?`, [req_id]);
+      const result = await pool.query(`DELETE FROM friend_request WHERE req_id = ? and status="pending"`, [req_id]);
+      console.log(result[0].affectedRows);
       return sendMsg.successMessage("Request rejected", [], res, 203);
     }
 
@@ -125,14 +131,15 @@ exports.changeRequestStatus = async (req, res) => {
 
     const [insert_id] = await pool.query(q, [status, req_id]);
 
-    console.log(insert_id);
-    return sendMsg.successMessage("Success", insert_id, res, 200);
+    // console.log(insert_id);
+    return sendMsg.successMessage("Request accepted", insert_id, res, 200);
   } catch (err) {
     console.log(err, " from crs");
     return sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 };
 
+//see all friends
 exports.seeFriends = async (req, res) => {
   if (!req.user) {
     return sendMsg.successMessage(`Your'e not logged in!!!!!`, [], res, 203);
@@ -160,5 +167,46 @@ exports.seeFriends = async (req, res) => {
   } catch (err) {
     console.log(err, " from sf");
     return sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+};
+
+exports.userProfile = async (req, res) => {
+  // console.log(req.params.user_id,"***************************************************");
+  // return res.status(200).json({ result: req.params.user_id });
+  try {
+    
+    if (req.user) 
+      {
+    } else {
+            sendMsg.throwsError(`Your'e not logged in`, 400);
+      }
+    // console.log(req.user);
+    const user_id = req.params.user_id;
+
+    
+
+    const [userInfo] = await pool.query(
+      `SELECT id,backgroundPicture,bio,birthDate,createdAt,email,profilePicture,username FROM user WHERE id = ?`,
+      [user_id]
+    );
+
+        const q = `select * from friend_request where (req_by = ? and req_to = ?) or (req_by = ? and req_to = ?)`;
+
+        const [userStatus] = await pool.query(q, [
+          req.user.id,
+          user_id,
+          user_id,
+          req.user.id,
+        ]);
+        
+    
+    
+    if (userStatus.length) {
+      userInfo[0].reqid = userStatus[0].req_id;
+      userInfo[0].status = userStatus[0].status;
+    } 
+    sendMsg.successMessage("Success", userInfo, res, 200);
+  } catch (err) {
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 };

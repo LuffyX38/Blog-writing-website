@@ -117,15 +117,14 @@
         fetch("/api/v1/auth/signout");
     }
 
-
-
+    const loadProfile = () =>{
+            
     fetch("/user/profile")
     .then(res => res.json())
     .then(res => {
        // name,bio,imgsr
-
        const profile = res.result.profile;
-                     document.getElementById("blogs").innerText = `Blogs ${profile.blog_count}`;
+       document.getElementById("blogs").innerText = `Blogs ${profile.blog_count}`;
 
        document.getElementById("name").innerText = profile.username;
        document.getElementById("bio").innerText = profile.bio;
@@ -133,6 +132,7 @@
        document.getElementById("imgsr").src = img;
     })
     .catch(err => console.error(err))
+    }
 
         document.getElementById("thisForm").addEventListener("submit", e =>{
             e.preventDefault();
@@ -156,13 +156,19 @@
             .then(res => res.json())
             .then(res => {
                 document.getElementById("msg").innerText = res.message;
-            }).catch(err => console.log(err));
-        }).finally(()=>{
+            }).catch(err => console.log(err))
+            .finally(()=>{
             document.getElementById("title").value = "";
             document.getElementById("blog").value = "";
             document.getElementById("status").checked = false;
-              
+            loadProfile();
+        });
         })
+
+
+loadProfile();
+          
+
     </script>
 </body>
 </html>

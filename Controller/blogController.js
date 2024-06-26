@@ -40,10 +40,10 @@ const noContent = (res, result) => {
 //to create blog
 exports.createBlog = async (req, res) => {
   try {
-    if (!req.user.id) {
+    if (!req.user) {
       throwsError(`Your'e not logged in`, 400);
     }
-    console.log(req.body);
+    // console.log(req.body);
     const { blog, available_to, blog_head } = req.body;
     const q = `INSERT INTO blogs (blog_by,blog,available_to,created_at,bloogger_id,blog_head) VALUES (?,?,?,FROM_UNIXTIME(?/1000),?,?)`;
 
@@ -55,7 +55,7 @@ exports.createBlog = async (req, res) => {
       req.user.id,
       blog_head,
     ]);
-    console.log(result);
+    // console.log(result);
     successMessage("Successfully created an blog", result, res, 200);
   } catch (err) {
     console.log(err);

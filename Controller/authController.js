@@ -100,7 +100,7 @@ exports.signup = async (req, res) => {
     }
 
     const hashedPassword = await createPassword(password, cpassword);
-    console.log(`from register: successfully hashed the password**`);
+    // console.log(`from register: successfully hashed the password**`);
     const q = `INSERT INTO user (username,email,password,createdAt) value (?,?,?,FROM_UNIXTIME(?/1000))`;
     const [result] = await pool.query(q, [
       username,
@@ -134,7 +134,7 @@ exports.signin = async (req, res) => {
       throwsError("Email or password is incorred..", 403);
     }
     const jwt_token = jwtToken(result[0].id);
-    console.log(jwt_token);
+    // console.log(jwt_token);
     setCookie(res, "jwt", jwt_token);
     const user = { ...result[0] };
 
@@ -175,7 +175,7 @@ exports.isSignedIn = async (req, res, next) => {
         req.cookies.jwt,
         process.env.JWT_SECRET
       );
-      console.log("Did ", decoded.id);
+      // console.log("Did ", decoded.id);
       const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,
                 u.birthdate,count(b.blog) AS blog_count FROM user AS u left join blogs AS b on
                 u.id = b.bloogger_id and b.delete_blog = false where u.id = ? GROUP BY u.id,u.username,
@@ -238,7 +238,7 @@ exports.forgotPassword = async (req, res) => {
 };
 
 exports.resetPassword = async (req, res) => {
-  console.log(req.params.token);
+  // console.log(req.params.token);
   const hashedToken = crypto
     .createHash("sha256")
     .update(req.params.token)

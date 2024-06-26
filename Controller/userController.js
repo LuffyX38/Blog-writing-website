@@ -251,7 +251,7 @@ exports.updateProfile = async (req, res) => {
 };
 
 exports.profile = async (req, res) => {
-  console.log(req.user," from middleware")
+  // console.log(req.user," from middleware")
   try {
     if (req.user) {
       successMessage("Your'e logged in", { profile: req.user }, res, 200);

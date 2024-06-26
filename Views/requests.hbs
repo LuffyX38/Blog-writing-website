@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Blogs</title>
+    <title>Requests</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         
@@ -41,7 +41,7 @@
                             <li class="list-group-item" id="blogs" onclick="myPosts()" role="button">My posts</li>
                             <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
 </li>
-                            <li class="list-group-item"><a href="requests" class="text-decoration-none text-body">Friends</a></li>
+                            <li class="list-group-item"><a href="#" class="text-decoration-none text-body">Friends</a></li>
                         </ul>
              <div class="card-body">
                 <a href="/login" class="card-link">Login</a>
@@ -79,13 +79,15 @@
                             </form>
                         </div>
                     </nav>
-                    <h1>Main Content</h1>
-                    <div id="blogsHere"></div>
+                    <div>
+                        <h1 id="abtusers"></h1>
+                    </div>
+                    <div id="all-users" class="container mt-4"></div>
+                   
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Bootstrap JS, Popper.js, and jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -116,29 +118,40 @@
     })
     .catch(err => console.error(err));
 
-    fetch("/api/v1/get-blog")
-    .then(res => res.json())
-    .then(res => {
-        console.log(res.result.results);
-        res.result.result.forEach(item =>{
-            const blog_head = item.blog_head ? item.blog_head : "🔥🔥🔥";
-            document.getElementById("blogsHere").innerHTML += 
-               `<br><div class="card text-center">
-                <div class="card-header">
-                    ${item.blog_by}
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">${blog_head}</h5>
-                    <p class="card-text">${item.blog}</p>
-                </div>
-                <div class="card-footer text-body-secondary">
-                    ${item.created_at}
-                </div>
-                </div>`
+  
+
+    let p = 0;
+    document.getElementById("all-users").innerHTML = "";
+
+        fetch("/check-friend-request")
+        .then(res=>res.json())
+        .then(res=>{
+            console.log(res);
+            if(res.result.result.length){
+                document.getElementById("abtusers").innerText = `Total requests ${res.result.result.length}`;
+            }else{
+                document.getElementById("abtusers").innerText = `No requests`;
+            }
+        res.result.result.forEach(item => {
+            const imgsrc = item.profilePicture ? item.profilePicture : "http://res.cloudinary.com/dfxohnig6/image/upload/v1716905965/fa3btlium1l1xgbqw1fi.jpg";
+
+            document.getElementById("all-users").innerHTML +=
+            `
+    <div class="card">
+      <div class="card-body d-flex align-items-center">
+        <img src= ${imgsrc} alt="Image" class="img-fluid mr-3" style="max-width: 100px;">
+        <div class="flex-grow-1">
+          <a href="/accept-friend-request/${item.id}">${item.username}</a>
+        </div>
+      </div>
+    </div><br>
+  `
+
         })
     })
-    .catch(err => console.error(err));
-
+    .catch(err => console.error(err))
+    
+    
 
  
 
