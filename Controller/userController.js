@@ -254,6 +254,11 @@ exports.profile = async (req, res) => {
   // console.log(req.user," from middleware")
   try {
     if (req.user) {
+
+      if (!req.user.id) {
+        return  successMessage("Your'e not logged in", { profile: req.user }, res, 200);
+      }
+
       successMessage("Your'e logged in", { profile: req.user }, res, 200);
     } else {
       throwsError(`Your'e not logged in`, 400);

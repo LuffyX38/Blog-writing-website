@@ -13,5 +13,7 @@ router.route("/change-request-status").patch(authController.isSignedIn, friendCo
 
 router.route("/see-friends").get(authController.isSignedIn, friendController.seeFriends);
 
+router.route("/get-my-friends").get(authController.isSignedIn, friendController.getAllFriends);
+
 
 module.exports = router;

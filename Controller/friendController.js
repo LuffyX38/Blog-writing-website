@@ -210,3 +210,34 @@ exports.userProfile = async (req, res) => {
     sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 };
+
+
+exports.getAllFriends = async (req, res) => {
+  
+  try {
+    console.log(req);
+    if (req.user) {
+    } else {
+      sendMsg.throwsError(`Your'e not logged in`, 400);
+    }
+
+    const q = `select f.row_id, u1.username, u1.id as friend_id, u1.profilePicture from friends as f
+              left join user as u1 on f.user_id1 = u1.id
+              left join user as u2 on f.user_id1 = u2.id
+              where(f.user_id1 = ? or f.user_id2 = ?) and(u1.id != ? or u2.id != ?)`;
+    
+    const [result] = await pool.query(q, [
+      req.user.id,
+      req.user.id,
+      req.user.id,
+      req.user.id,
+    ]);
+
+    sendMsg.successMessage("Success", result, res, 200);
+
+    
+  } catch (err) {
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+
+}

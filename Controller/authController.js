@@ -175,7 +175,6 @@ exports.isSignedIn = async (req, res, next) => {
         req.cookies.jwt,
         process.env.JWT_SECRET
       );
-      // console.log("Did ", decoded.id);
       const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,
                 u.birthdate,count(b.blog) AS blog_count FROM user AS u left join blogs AS b on
                 u.id = b.bloogger_id and b.delete_blog = false where u.id = ? GROUP BY u.id,u.username,
@@ -183,7 +182,7 @@ exports.isSignedIn = async (req, res, next) => {
       
       const [result] = await pool.query(q, [decoded.id]);
       req.user = result[0];
-      return next();p
+      return next();
     } catch (err) {
       console.log(err);
       req.user = undefined;
