@@ -12,10 +12,11 @@ const pool = mysql.createPool({
 exports.users = async (req, res) => {
   try {
     const { loadCount } = req.body;
+    console.log("load count ", loadCount);
     if (!req.user) {
       //id,username,email,profilePicture,backgroundPicture
       const [user] = await pool.query(
-        `SELECT id,username,email,profilePicture,backgroundPicture FROM user`
+        `SELECT id,username,email,profilePicture,backgroundPicture FROM user LIMIT 3 offset ?`,[loadCount]
       );
       return sendMsg.successMessage(
         "Success",
@@ -24,6 +25,7 @@ exports.users = async (req, res) => {
         200
       );
     }
+
     const q = `SELECT id,username,email,profilePicture,backgroundPicture FROM user WHERE id != ? LIMIT 3 offset ?`;
     const [user] = await pool.query(q, [req.user.id, loadCount]);
     sendMsg.successMessage(
@@ -45,6 +47,11 @@ exports.sendFriendRequest = async (req, res) => {
     }
     const my_id = req.user.id;
     const { user_id } = req.body;
+
+    if (my_id === user_id) {
+      return sendMsg.successMessage("Cannot send friend request", [], res, 200);
+    }
+
     console.log(user_id);
     if (!user_id || my_id === user_id) {
       return sendMsg.throwsError("Invalid id, or no id posted", 400);
@@ -141,10 +148,11 @@ exports.changeRequestStatus = async (req, res) => {
 
 //see all friends
 exports.seeFriends = async (req, res) => {
+   console.log("entered");
   if (!req.user) {
     return sendMsg.successMessage(`Your'e not logged in!!!!!`, [], res, 203);
   }
-
+  
   try {
     const q = `SELECT f.status,u.username,u.profilePicture,u.backgroundPicture,u.email,u.id,f.req_id,
        f.req_to,f.req_by FROM friend_request as f INNER JOIN user AS u
@@ -155,9 +163,11 @@ exports.seeFriends = async (req, res) => {
       req.user.id,
       req.user.id,
     ]);
+    console.log(result);
     if (!result.length) {
       sendMsg.successMessage("No friends 🥹😢😭", [], res, 200);
     }
+    // console.log(result);
     return sendMsg.successMessage(
       "Success",
       { results: result.length, result },
@@ -174,16 +184,20 @@ exports.userProfile = async (req, res) => {
   // console.log(req.params.user_id,"***************************************************");
   // return res.status(200).json({ result: req.params.user_id });
   try {
-    
-    if (req.user) 
-      {
-    } else {
-            sendMsg.throwsError(`Your'e not logged in`, 400);
-      }
-    // console.log(req.user);
-    const user_id = req.params.user_id;
+      const user_id = req.params.user_id;
 
-    
+     if (!req.user) 
+      {
+         const [userInfo] = await pool.query(
+           `SELECT id,backgroundPicture,bio,birthDate,createdAt,email,profilePicture,username FROM user WHERE id = ?`,
+           [user_id]
+         );
+
+         userInfo[0].reqid = null;
+         userInfo[0].status = null;
+
+         return sendMsg.successMessage("Success", userInfo, res, 200);
+      }
 
     const [userInfo] = await pool.query(
       `SELECT id,backgroundPicture,bio,birthDate,createdAt,email,profilePicture,username FROM user WHERE id = ?`,
@@ -204,10 +218,13 @@ exports.userProfile = async (req, res) => {
     if (userStatus.length) {
       userInfo[0].reqid = userStatus[0].req_id;
       userInfo[0].status = userStatus[0].status;
-    } 
-    sendMsg.successMessage("Success", userInfo, res, 200);
+    } else {
+      userInfo[0].reqid = null;
+      userInfo[0].status = null;
+    }
+    return sendMsg.successMessage("Success", userInfo, res, 200);
   } catch (err) {
-    sendMsg.errMessage(err.message, err, res, err.statusCode);
+    return sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 };
 
@@ -215,23 +232,27 @@ exports.userProfile = async (req, res) => {
 exports.getAllFriends = async (req, res) => {
   
   try {
-    console.log(req);
+    
     if (req.user) {
     } else {
       sendMsg.throwsError(`Your'e not logged in`, 400);
     }
-
+   /*
     const q = `select f.row_id, u1.username, u1.id as friend_id, u1.profilePicture from friends as f
               left join user as u1 on f.user_id1 = u1.id
               left join user as u2 on f.user_id1 = u2.id
               where(f.user_id1 = ? or f.user_id2 = ?) and(u1.id != ? or u2.id != ?)`;
+    */
     
+    const q = `select f.row_id,u.username,u.id as friend_id, u.profilePicture from friends as f 
+               left join user as u on f.user_id1 = u.id or f.user_id2 = u.id
+               where (f.user_id1 = ? or f.user_id2 = ?) and not (u.id = ?)`;
     const [result] = await pool.query(q, [
       req.user.id,
       req.user.id,
-      req.user.id,
-      req.user.id,
+      req.user.id
     ]);
+    console.log(result);
 
     sendMsg.successMessage("Success", result, res, 200);
 
@@ -240,4 +261,50 @@ exports.getAllFriends = async (req, res) => {
     sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 
+}
+
+exports.checkIfFriends = async (req, res) => {
+  try {
+    if (!req.user.id) {
+          sendMsg.successMessage("Success",{sendableReq: false, message: "Signing in is required!!!"}, res, 200);
+
+    }
+    
+    const { friend_id } = req.body;
+    const q = `select * from friends where
+              (user_id1 = ? and user_id2 = ?)
+              or (user_id1 = ? and user_id2 = ?)`;
+    
+    let [result] = await pool.query(q, [req.user.id, friend_id, friend_id, req.user.id]);
+    if (result.length) {
+      sendMsg.successMessage("Success",{sendableReq: false, message: "Friends 😸"}, res, 200);
+    } else {
+      sendMsg.successMessage("Success", { sendableReq: true, message: "Send friend request" }, res, 200);
+    }
+
+  } catch (err) {
+    console.log(err);
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+}
+
+exports.searchFriends = async (req, res, next) => {
+  try {
+    
+    const { searched } = req.params;
+    console.log(searched);
+    if (!searched.length) {
+      return sendMsg.successMessage("Success", [], res, 200);
+    }
+    const q = `SELECT id,username,profilePicture,bio FROM user WHERE username LIKE "%"?"%"`;
+    const [result] = await pool.query(q, [searched]);
+    sendMsg.successMessage("Success", { results:result.length, result}, res, 200);
+    // res.redirect("/search-user",200);
+    next();
+  } catch (err) {
+    console.log(err);
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+    next();
+  }
+  next();
 }

@@ -1,4 +1,5 @@
 const mysql = require("mysql2/promise");
+const moment = require("moment");
 
 const errMessage = (msg, err, res, statusCode) => {
   this.statusCode = statusCode || 500;
@@ -64,13 +65,22 @@ exports.createBlog = async (req, res) => {
 };
 
 exports.getBlogs = async (req, res) => {
-  const q = `SELECT * FROM blogs WHERE delete_blog = FALSE ORDER BY created_at DESC`;
+  const { loadCount } = req.body;
+  const q = `SELECT * FROM blogs WHERE delete_blog = FALSE AND available_to = "public" ORDER BY created_at DESC LIMIT 7 OFFSET ?`;
   try {
-    const [result] = await pool.query(q);
-    noContent(res, result);
+    const [result] = await pool.query(q,[loadCount]);
+    // noContent(res, result);
+    // const timeAgo = moment(result.created_at).fromNow();
+    const re = result.map(item => {
+      return {
+        ...item,
+        created_time_ago: moment(item.created_at).fromNow()
+      }
+    });
+    // console.log(re);
     successMessage(
       "Successfully loaded all blogs",
-      { result, results: result.length },
+      { result: re, results: result.length },
       res,
       200
     );
@@ -98,15 +108,68 @@ exports.getMyBlogs = async (req, res) => {
     if (req.user) {
       const q = `SELECT * FROM blogs WHERE bloogger_id = ? AND delete_blog = false`;
       const [result] = await pool.query(q, [req.user.id]);
+      const newResult = result.map(item => {
+        return {
+          ...item,
+          created_time_ago: moment(item.created_at).fromNow()
+        }
+      });
+     // console.log(newResult);
+
       if (!result.length) {
         return successMessage("No posts", [], res, 200);
       }
-      return successMessage("Success", result, res, 200);
+      return successMessage("Success", {result:newResult}, res, 200);
     } else {
       return throwsError(`Your'e not logged in`, 203);
     }
   } catch (err) {
     console.log(err);
     errMessage(err.message, err, res, err.statusCode);
+  }
+}
+
+exports.getUserBlogs = async (req, res) => {
+    try {
+      const { id } = req.params;
+        let q = `SELECT * FROM blogs WHERE bloogger_id = ? AND delete_blog = false AND available_to = "public"`;
+      if (req.user && id === req.user.id) {
+        q = `SELECT * FROM blogs WHERE bloogger_id = ? AND delete_blog = false AND available_to = "public"`;
+      }
+        const [result] = await pool.query(q, [id]);
+        if (!result.length) {
+          return successMessage("No posts", [], res, 200);
+      }
+      
+      const createdOn = result.map(item => {
+        return {
+          ...item,
+          created_on: moment(item.createdAt).format("MMM Do YY")
+        }
+      })
+      //console.log(createdOn);
+        return successMessage("Success", {result:createdOn}, res, 200); 
+    } catch (err) {
+      console.log(err);
+      errMessage(err.message, err, res, err.statusCode);
+    }
+}
+
+
+//handler is done //ui to be finished later
+exports.getFriendsPublicPrivateBlog = async (req, res) => {
+  try {
+    if (!req.user) {
+      throwsError(`Your'e not logged in`, 400);
+    }
+    const q = `select u.username,u.id as friend_id,b.blog,b.bloogger_id,b.available_to from friends as f 
+              left join user as u on f.user_id1 = u.id or f.user_id2 = u.id
+              left join blogs as b on u.id = b.bloogger_id
+              where (f.user_id1 = ? or f.user_id2 = ?) and not (u.id = ?) and blog is not null;`;
+    const [result] = await pool.query(q, [req.user.id, req.user.id,req.user.id]);
+    return successMessage("Success", result, res, 200);
+  } catch (err) {
+         console.log(err);
+         errMessage(err.message, err, res, err.statusCode);
   }
 }

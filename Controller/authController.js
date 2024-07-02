@@ -169,7 +169,12 @@ exports.signout = (req, res) => {
 
 //to be finished letter
 exports.isSignedIn = async (req, res, next) => {
-  if (req.cookies.jwt) {
+  if (!req.cookies.jwt) {
+    req.user = undefined;
+    return next();
+  }
+
+  
     try {
       const decoded = await promisify(jwt.verify)(
         req.cookies.jwt,
@@ -181,15 +186,13 @@ exports.isSignedIn = async (req, res, next) => {
                 u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate`;
       
       const [result] = await pool.query(q, [decoded.id]);
-      req.user = result[0];
+      req.user = result[0] || undefined;
       return next();
     } catch (err) {
       console.log(err);
       req.user = undefined;
     }
-  } else {
-    req.user = undefined;
-  }
+ 
   return next();
 };
 

@@ -15,5 +15,14 @@ router.route("/see-friends").get(authController.isSignedIn, friendController.see
 
 router.route("/get-my-friends").get(authController.isSignedIn, friendController.getAllFriends);
 
+router.route("/check-if-friends").post(authController.isSignedIn, friendController.checkIfFriends);
+
+
+router.route("/search-user/:searched").post(authController.isSignedIn, friendController.searchFriends);
+
+
+
+
+
 
 module.exports = router;

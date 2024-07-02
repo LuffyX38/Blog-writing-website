@@ -59,4 +59,17 @@ router.get("/requests", (req, res) => {
   res.render("requests");
 });
 
+
+router.get("/friendsWith", (req, res) => {
+  res.render("friendsWith");
+});
+
+router.get("/manage-friends", (req, res) => {
+  res.render("manageFriends");
+});
+
+router.get("/search-user/:searched",(req, res) => {
+  res.render("search");
+});
+
 module.exports = router;

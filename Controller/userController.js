@@ -160,10 +160,9 @@ exports.uploadToCloudinary = async (req, res, next) => {
 exports.updateProfile = async (req, res) => {
   //id,username,profilePicture,backgroundPicture,bio,birthdate
 
-  const { username, profilePicture, backgroundPicture, bio, birthdate } =
-    req.body;
+  const { username, profilePicture, backgroundPicture, bio, birthdate } = req.body;
 
-  // console.log();
+  let changed = false;
 
   try {
     if (req.file && !req.fileFilterPassed) {
@@ -183,6 +182,7 @@ exports.updateProfile = async (req, res) => {
           bio,
           req.user.id,
         ]);
+        changed = true;
       }
       if (username) {
         try {
@@ -190,6 +190,7 @@ exports.updateProfile = async (req, res) => {
             username,
             req.user.id,
           ]);
+          changed = true;
         } catch (err) {
           errMessage(
             "Username already taken, try something else",
@@ -212,6 +213,7 @@ exports.updateProfile = async (req, res) => {
             console.log("pfp unlinked");
           }
         );
+        changed = true;
       }
 
       if (await req.backgroundPictureUrl) {
@@ -229,6 +231,7 @@ exports.updateProfile = async (req, res) => {
             console.log("bgimg unliked");
           }
         );
+        changed = true;
       }
       if (birthdate) {
         //format 2023-06-17
@@ -236,12 +239,18 @@ exports.updateProfile = async (req, res) => {
           birthdate,
           req.user.id,
         ]);
+        changed = true;
       }
       const [user] = await pool.query(
         "SELECT username,email,profilePicture,backgroundPicture,bio,birthdate FROM user WHERE id = ?",
         [req.user.id]
       );
-      return successMessage("Successfully updated profile...", user, res, 200);
+      console.log(changed, " from change");
+      if (changed) {
+        return successMessage("Successfully updated profile...", user, res, 200);
+      } else {
+        return successMessage("Nothing to update...", user, res, 200);
+      }
     } else {
       return throwsError(`Your'e not signed in`, 400);
     }
