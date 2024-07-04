@@ -125,7 +125,7 @@
         res.result.result.map(item=>{
             document.getElementById("content-here").innerHTML += 
             `
-                <small>//${item.created_time_ago}</small>
+                <small>//created ${item.created_time_ago}//${item.available_to}</small>
              <div class="card" style="position: relative;">
         <div class="card-body">
             <h6>${item.blog_head}</h6>

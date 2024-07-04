@@ -25,6 +25,7 @@ router.route("/profile").get(
   },
   userController.profile
 );
+
 router
   .route("/updatePassword")
   .patch(authController.isSignedIn, userController.updateCurrentPassword);

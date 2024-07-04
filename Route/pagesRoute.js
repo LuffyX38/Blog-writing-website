@@ -49,6 +49,11 @@ router.get(
   friendController.userProfile
 );
 
+router.get("/api/v1/auth/resetPassword/:token", (req, res) => {
+  res.render("resetPassword");
+});
+
+
 router.get(
   "/accept-friend-request/:user_id/userInfo",
   authController.isSignedIn,
@@ -71,5 +76,13 @@ router.get("/manage-friends", (req, res) => {
 router.get("/search-user/:searched",(req, res) => {
   res.render("search");
 });
+
+router.get("/friends-blogs",(req, res) => {
+  res.render("friends-blogs");
+});
+
+router.get("/forgot-password", (req, res) => {
+  res.render("forgot-password");
+})
 
 module.exports = router;

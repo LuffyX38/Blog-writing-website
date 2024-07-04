@@ -130,7 +130,7 @@
         }else{
             document.getElementById("postsBy").innerText = `No posts found`;
         }
-        console.log(res);
+        //console.log(res);
         res.result.result.forEach(item=>{
             document.getElementById("content-here").innerHTML += 
             `
@@ -210,12 +210,12 @@
     fetch(`${window.location.pathname}/userInfo`)
     .then(res => res.json())
     .then(res => {
-        console.log("*** ",res);
+        //console.log("*** ",res);
        
-       if(res.result[0].status){
+      // if(res.result[0].status){
         checkIfFriends(res.result[0].id);
-       }
-        console.log("user info",res);
+      // }
+        //console.log("user info",res);
         const imgSrc = res.result[0].profilePicture ? res.result[0].profilePicture : "http://res.cloudinary.com/dfxohnig6/image/upload/v1716905965/fa3btlium1l1xgbqw1fi.jpg";
         document.getElementById("uimg").src = imgSrc;
         document.getElementById("ubio").innerText = res.result[0].bio;
@@ -232,7 +232,7 @@
         let obj = {
             user_id:id
         };
-        console.log(obj);
+       // console.log(obj);
         fetch("/send-friend-request",{
             method:"POST",
             headers:{

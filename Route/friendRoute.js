@@ -17,6 +17,8 @@ router.route("/get-my-friends").get(authController.isSignedIn, friendController.
 
 router.route("/check-if-friends").post(authController.isSignedIn, friendController.checkIfFriends);
 
+router.route("/get-pending-request-count").get(authController.isSignedIn, friendController.getPendingRequestCount);
+
 
 router.route("/search-user/:searched").post(authController.isSignedIn, friendController.searchFriends);
 

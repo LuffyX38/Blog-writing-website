@@ -12,7 +12,7 @@ const pool = mysql.createPool({
 exports.users = async (req, res) => {
   try {
     const { loadCount } = req.body;
-    console.log("load count ", loadCount);
+    //console.log("load count ", loadCount);
     if (!req.user) {
       //id,username,email,profilePicture,backgroundPicture
       const [user] = await pool.query(
@@ -52,7 +52,7 @@ exports.sendFriendRequest = async (req, res) => {
       return sendMsg.successMessage("Cannot send friend request", [], res, 200);
     }
 
-    console.log(user_id);
+    //console.log(user_id);
     if (!user_id || my_id === user_id) {
       return sendMsg.throwsError("Invalid id, or no id posted", 400);
     }
@@ -129,7 +129,7 @@ exports.changeRequestStatus = async (req, res) => {
 
     if (status === "rejected") {
       const result = await pool.query(`DELETE FROM friend_request WHERE req_id = ? and status="pending"`, [req_id]);
-      console.log(result[0].affectedRows);
+      //console.log(result[0].affectedRows);
       return sendMsg.successMessage("Request rejected", [], res, 203);
     }
 
@@ -146,9 +146,11 @@ exports.changeRequestStatus = async (req, res) => {
   }
 };
 
+
+
 //see all friends
 exports.seeFriends = async (req, res) => {
-   console.log("entered");
+   //console.log("entered");
   if (!req.user) {
     return sendMsg.successMessage(`Your'e not logged in!!!!!`, [], res, 203);
   }
@@ -163,7 +165,7 @@ exports.seeFriends = async (req, res) => {
       req.user.id,
       req.user.id,
     ]);
-    console.log(result);
+    //console.log(result);
     if (!result.length) {
       sendMsg.successMessage("No friends 🥹😢😭", [], res, 200);
     }
@@ -214,14 +216,11 @@ exports.userProfile = async (req, res) => {
         ]);
         
     
-    
+    console.log(userStatus);
     if (userStatus.length) {
       userInfo[0].reqid = userStatus[0].req_id;
       userInfo[0].status = userStatus[0].status;
-    } else {
-      userInfo[0].reqid = null;
-      userInfo[0].status = null;
-    }
+    } 
     return sendMsg.successMessage("Success", userInfo, res, 200);
   } catch (err) {
     return sendMsg.errMessage(err.message, err, res, err.statusCode);
@@ -307,4 +306,18 @@ exports.searchFriends = async (req, res, next) => {
     next();
   }
   next();
+}
+
+
+exports.getPendingRequestCount = async (req, res) => {
+  try {
+    if (!req.user) {
+      return sendMsg.successMessage(`Your'e not logged in!!`, [{pending_req:0}], res, 200);
+    }
+    const q = `select count(*) as pending_req from friend_request where req_to = ? and status = "pending"`;
+    const [result] = await pool.query(q, [req.user.id]);
+    return sendMsg.successMessage("Success", result, res, 200);
+  } catch (err) {
+        sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
 }

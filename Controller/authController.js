@@ -74,11 +74,13 @@ const createPasswordResetToken = async (email, res) => {
 };
 
 const createPassword = async (password, cpassword) => {
-  if (password.length < 8) {
-    throwsError("Password should be at least 8 characters long", 400);
-  }
+  
   if (password !== cpassword || !password) {
     throwsError("Passwords are not matching", 400);
+  }
+
+  if (password.length < 8) {
+    throwsError("Password should be at least 8 characters long", 400);
   }
   const hashedPassword = await bcrypt.hash(password, 8);
   return hashedPassword;
@@ -156,8 +158,6 @@ exports.signin = async (req, res) => {
   }
 };
 
-
-
 exports.signout = (req, res) => {
   res.cookie("jwt", "logout", {
     expires: new Date(Date.now() + 2 * 1000),
@@ -174,42 +174,42 @@ exports.isSignedIn = async (req, res, next) => {
     return next();
   }
 
-  
-    try {
-      const decoded = await promisify(jwt.verify)(
-        req.cookies.jwt,
-        process.env.JWT_SECRET
-      );
-      const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,
+  try {
+    const decoded = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+    const q = `SELECT u.id,u.username,u.email,u.profilePicture,u.backgroundPicture,u.bio,
                 u.birthdate,count(b.blog) AS blog_count FROM user AS u left join blogs AS b on
                 u.id = b.bloogger_id and b.delete_blog = false where u.id = ? GROUP BY u.id,u.username,
                 u.email,u.profilePicture,u.backgroundPicture,u.bio,u.birthdate`;
-      
-      const [result] = await pool.query(q, [decoded.id]);
-      req.user = result[0] || undefined;
-      return next();
-    } catch (err) {
-      console.log(err);
-      req.user = undefined;
-    }
- 
+
+    const [result] = await pool.query(q, [decoded.id]);
+    req.user = result[0] || undefined;
+    return next();
+  } catch (err) {
+    console.log(err);
+    req.user = undefined;
+  }
+
   return next();
 };
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
+  console.log(email);
   try {
     const [result] = await pool.query(`SELECT * FROM user WHERE email = ?`, [
       email,
     ]);
     if (!result.length) {
-      throwsError("No email found", 400);
+      return throwsError("No email found", 400);
     }
     const resetToken = await createPasswordResetToken(result[0].email, res); //acquired reset token
     const resetPasswordUrl = `${req.protocol}://${req.get(
       "host"
     )}/api/v1/auth/resetPassword/${resetToken}`;
-    const resetPasswordUrlMessage = `forgot your password? submit a patch request with your password and confirm password to: ${resetPasswordUrl}\n if you didn't forget your password, please ignore this message!`;
+    const resetPasswordUrlMessage = `forgot your password? submit a patch request with your password and confirm password to: <a href="${resetPasswordUrl}">Click here</a> if you didn't forget your password, please ignore this message!`;
 
     try {
       await sendEmail({
@@ -217,7 +217,7 @@ exports.forgotPassword = async (req, res) => {
         subject: "Your password reset token (Valid for only 10 minutes)",
         message: resetPasswordUrlMessage,
       });
-      successMessage(
+      return successMessage(
         "Reset password request sent to your email",
         { url: resetPasswordUrl, token: resetToken },
         res,
@@ -231,7 +231,7 @@ exports.forgotPassword = async (req, res) => {
         passwordResetExpires = NULL
         WHERE email = ?`;
       await pool.query(q, [email]);
-      throwsError("Reset password failed", 400);
+      return throwsError("Reset password failed", 400);
     }
   } catch (err) {
     const statusCode = err.statusCode || 500;
@@ -246,7 +246,7 @@ exports.resetPassword = async (req, res) => {
     .update(req.params.token)
     .digest("hex");
   const { password, cpassword } = req.body;
-
+  console.log("from body, ", req.body);
   try {
     const [result] = await pool.query(
       "SELECT * FROM user WHERE  passwordResetToken = ? AND passwordResetExpires > FROM_UNIXTIME(?/1000)",
