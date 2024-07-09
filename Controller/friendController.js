@@ -11,7 +11,9 @@ const pool = mysql.createPool({
 //get all users
 exports.users = async (req, res) => {
   try {
-    const { loadCount } = req.body;
+    let { loadCount } = req.body;
+
+    if (loadCount == null) loadCount = 0;
     //console.log("load count ", loadCount);
     if (!req.user) {
       //id,username,email,profilePicture,backgroundPicture

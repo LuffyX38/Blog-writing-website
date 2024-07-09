@@ -83,6 +83,11 @@ router.get("/friends-blogs",(req, res) => {
 
 router.get("/forgot-password", (req, res) => {
   res.render("forgot-password");
+});
+
+
+router.get("/test-comment", (req, res) => {
+  res.render("testComment");
 })
 
 module.exports = router;

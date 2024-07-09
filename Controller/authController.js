@@ -133,7 +133,7 @@ exports.signin = async (req, res) => {
       !result.length ||
       !(await bcrypt.compare(password, result[0].password))
     ) {
-      throwsError("Email or password is incorred..", 403);
+      throwsError("Email or password is incorrect..", 403);
     }
     const jwt_token = jwtToken(result[0].id);
     // console.log(jwt_token);
