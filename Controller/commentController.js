@@ -111,3 +111,104 @@ exports.postSubComment = async (req, res) => {
     sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 };
+
+exports.getCommentCount = async (req, res) => {
+  try {
+    const {blog_id} = req.params;
+    const q = `SELECT count(c.blog_id) as comment_count FROM blogs as b
+left join comment_system as c on c.blog_id = b.blog_id
+ WHERE b.delete_blog = FALSE AND b.available_to = "public" and b.blog_id = ?
+ group by b.blog_id,b.blog
+ ORDER BY b.created_at DESC `;
+    const [result] = await pool.query(q, [blog_id]);
+    return sendMsg.successMessage(`Success`, result, res, 200);
+
+  } catch (err) {
+   sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+}
+
+exports.getLikes = async (req, res) => {
+  try {
+    const q = `select ifnull(sum(liked),0) as likeCount from likes where blog_id = ?`;
+    const { blog_id } = req.params;
+    const [result] = await pool.query(q, [blog_id]);
+    sendMsg.successMessage("success", result, res, 200);
+  } catch (err) {
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+}
+
+// to get individual liked status of user for blog
+// select * from likes where blog_id = 31 and liked_by_id = 2 order by message_on desc limit 1;
+
+exports.getIndiBlogLike = async (req,res) => {
+
+  try {
+    const { blog_id } = req.params;
+    const [result] = await pool.query(
+      `select likes from blogs where blog_id = ?`,
+      [blog_id]
+    );
+
+    //console.log(result)
+    // if (result.length) {
+    //   console.log(result);
+    // } else {
+    //   console.log(result.length);
+    // }  
+      sendMsg.successMessage("success", result, res, 200);
+
+
+  } catch (err) {
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+
+  }
+  
+}
+
+exports.postLike = async (req, res) => {
+  try {
+    if (!req.user) {
+      return sendMsg.throwsError(`Your'e not logged in`, 400);
+    }
+    const { blog_id } = req.body;
+
+    const q = `select * from likes where blog_id = ? and liked_by_id = ? order by message_on desc limit 1`;
+    const [result] = await pool.query(q,[blog_id,req.user.id]);
+    let like = 0;
+    if (result[0] === undefined || result[0].liked === -1) {
+      like = 1;
+    } else if (result[0].liked === 1) {
+      like = -1;
+    }
+
+    //insert into likes(liked,liked_by_id,blog_id,message_on) value (1,2,32,now());
+    const pq = `insert into likes(liked, liked_by_id,blog_id, message_on) value (?,?,?,FROM_UNIXTIME(?/1000))`;
+    const [postRes] = await pool.query(pq, [like, req.user.id, blog_id, Date.now()]);
+    console.log(postRes);
+    console.log("like is posted", like);
+
+    sendMsg.successMessage("success", result, res, 200);
+  } catch (err) {
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+}
+
+
+exports.allBlogLikeStatus = async (req, res) => {
+  try {
+    let user = -1;
+    if (req.user) {
+      user = req.user.id;
+    }
+    let q = `select blog_id,sum(liked) as liked,liked_by_id from likes
+               where liked_by_id = ? group by blog_id,liked_by_id`;
+    
+    const [result] = await pool.query(q, [req.user.id]);
+    sendMsg.successMessage("success", result, res, 200);
+
+  } catch (err) {
+    sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+}

@@ -66,7 +66,12 @@ exports.createBlog = async (req, res) => {
 
 exports.getBlogs = async (req, res) => {
   const { loadCount } = req.body;
-  const q = `SELECT * FROM blogs WHERE delete_blog = FALSE AND available_to = "public" ORDER BY created_at DESC LIMIT 7 OFFSET ?`;
+  //const q = `SELECT * FROM blogs WHERE delete_blog = FALSE AND available_to = "public" ORDER BY created_at DESC LIMIT 7 OFFSET ?`;
+  const q = `SELECT b.* ,count(c.blog_id) as comment_count FROM blogs as b
+            left join comment_system as c on c.blog_id = b.blog_id
+            WHERE b.delete_blog = FALSE AND b.available_to = "public"
+            group by b.blog_id,b.blog
+            ORDER BY b.created_at DESC LIMIT 7 OFFSET ?`;
   try {
     const [result] = await pool.query(q,[loadCount]);
     // noContent(res, result);

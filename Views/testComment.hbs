@@ -137,8 +137,7 @@
 
 
         const postMainSubComment = (to_whom,blog_id,reply_id) =>{
-            console.log(to_whom,blog_id,reply_id,"**** ** **");
-            
+            //console.log(to_whom,blog_id,reply_id,"**** ** **");
             if(document.getElementById(`${reply_id}openMainSubInput`).style.display === "none"){
                 document.getElementById(`${reply_id}openMainSubInput`).style.display = "flex";
                 document.getElementById(`postmainsubcom${reply_id}`).innerText = "cancel";
@@ -152,7 +151,6 @@
 
 
        // loadComments();
-        //to be finished leter
         const openSubComments = (blog_id,reply_id) =>{
             //console.log("blog id ",blog_id,"reply_id",reply_id);
             fetch(`/api/v1/auth/get-sub-comment/${blog_id}/${reply_id}`)
@@ -183,8 +181,6 @@
                     <button class="btn btn-outline-secondary" id="${item.reply_row_id}post_sub_button" type="button">Enter</button>
                     </div>
                     </div>
-
-
                      <hr>
                    
                     `;

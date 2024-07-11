@@ -15,6 +15,14 @@ router.route("/get-comment/:blog_id/:loadCount?").get(commentController.getComme
 router.route("/post-comment").post(authController.isSignedIn,commentController.postComment);
 
 router.route("/get-sub-comment/:blog_id/:reply_id").get(commentController.getSubComments);
-router.route("/post-sub-comment").post(authController.isSignedIn,commentController.postSubComment);
+router.route("/post-sub-comment").post(authController.isSignedIn, commentController.postSubComment);
+
+
+router.route("/get-comment-count/:blog_id").get(commentController.getCommentCount);
+router.route("/get-blog-like-count/:blog_id").get(commentController.getIndiBlogLike);
+
+router.route("/post-like").post(authController.isSignedIn,commentController.postLike);
+router.route("/blogs-like-status").get(authController.isSignedIn,commentController.allBlogLikeStatus);
+
 
 module.exports = router;
