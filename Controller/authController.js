@@ -144,14 +144,15 @@ exports.signin = async (req, res) => {
     delete user.passwordResetToken;
     delete user.passwordResetExpires;
     delete user.passwordChangedAt;
-    // res.status(200).redirect("/main");
+    console.log("this does not work");
+    return res.status(200).redirect("/main");
 
-    return successMessage(
-      "User has successfully logged in",
-      { user, jwt: jwt_token, cookie: req.cookies.jwt },
-      res,
-      200
-    );
+      // return successMessage(
+      //   "User has successfully logged in",
+      //   { user, jwt: jwt_token, cookie: req.cookies.jwt },
+      //   res,
+      //     200
+      // );
   } catch (err) {
     const statusCode = err.statusCode || 500;
     return errMessage(err.message, err, res, statusCode);

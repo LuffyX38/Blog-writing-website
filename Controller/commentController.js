@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
 });
 
-exports.getComments = async (req, res) => {
+  exports.getComments = async (req, res) => {
   try {
     if (!req.user) {
       //  return sendMsg.throwsError(`Your'e not logged in`, 400);
@@ -99,7 +99,7 @@ exports.postSubComment = async (req, res) => {
       return sendMsg.throwsError(`Your'e not logged in`, 400);
     }
       const { to_id, blog_id, reply_id, message } = req.body;
-      console.log(message);
+      //console.log(message);
       const q =
           ` insert into sub_comment_system
            (reply_id,message,user_id,blog_id,message_on,to_whom)
@@ -121,7 +121,14 @@ left join comment_system as c on c.blog_id = b.blog_id
  group by b.blog_id,b.blog
  ORDER BY b.created_at DESC `;
     const [result] = await pool.query(q, [blog_id]);
-    return sendMsg.successMessage(`Success`, result, res, 200);
+    //console.log(result);
+    if (result.length) {
+          return sendMsg.successMessage(`Success`, result, res, 200);
+
+    } else {
+          return sendMsg.successMessage(`Success`, [{comment_count:0}], res, 200);
+
+    }
 
   } catch (err) {
    sendMsg.errMessage(err.message, err, res, err.statusCode);
@@ -170,28 +177,36 @@ exports.getIndiBlogLike = async (req,res) => {
 exports.postLike = async (req, res) => {
   try {
     if (!req.user) {
-      return sendMsg.throwsError(`Your'e not logged in`, 400);
+      return sendMsg.successMessage(`Your'e not logged in!!`, [], res, 200);
     }
     const { blog_id } = req.body;
 
-    const q = `select * from likes where blog_id = ? and liked_by_id = ? order by message_on desc limit 1`;
+    const q = `select * from likes where blog_id = ? and liked_by_id = ? order by row_id desc limit 1`;
     const [result] = await pool.query(q,[blog_id,req.user.id]);
     let like = 0;
-    if (result[0] === undefined || result[0].liked === -1) {
-      like = 1;
-    } else if (result[0].liked === 1) {
+    // if (result[0] === undefined || result[0].liked === 0 || (result[0].liked === -1 && result[0].liked !== 1)) {
+    //   like = 1;
+    // } else if (result[0].liked === 1 && result[0].liked !== -1 && result[0].liked !== 0) {
+    //   like = -1;
+    // }
+    //console.log(result);
+    if (result[0] && result[0].liked !== -1 && result[0].liked !== 0) {
       like = -1;
     }
-
+    
+    if(result[0] === undefined || result[0].liked !== 1){
+      like = 1;
+    }
+    //console.log(like);
     //insert into likes(liked,liked_by_id,blog_id,message_on) value (1,2,32,now());
-    const pq = `insert into likes(liked, liked_by_id,blog_id, message_on) value (?,?,?,FROM_UNIXTIME(?/1000))`;
+     const pq = `insert into likes(liked, liked_by_id,blog_id, message_on) value (?,?,?,FROM_UNIXTIME(?/1000))`;
     const [postRes] = await pool.query(pq, [like, req.user.id, blog_id, Date.now()]);
-    console.log(postRes);
-    console.log("like is posted", like);
+    // console.log(postRes);
+    //console.log("like is posted", like);
 
-    sendMsg.successMessage("success", result, res, 200);
+    return sendMsg.successMessage("success", result, res, 200);
   } catch (err) {
-    sendMsg.errMessage(err.message, err, res, err.statusCode);
+    return sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 }
 
@@ -199,16 +214,29 @@ exports.postLike = async (req, res) => {
 exports.allBlogLikeStatus = async (req, res) => {
   try {
     let user = -1;
+    //console.log(req.user);
     if (req.user) {
       user = req.user.id;
     }
     let q = `select blog_id,sum(liked) as liked,liked_by_id from likes
                where liked_by_id = ? group by blog_id,liked_by_id`;
     
-    const [result] = await pool.query(q, [req.user.id]);
-    sendMsg.successMessage("success", result, res, 200);
+    const [result] = await pool.query(q, [user]);
+    return sendMsg.successMessage("success", result, res, 200);
 
   } catch (err) {
-    sendMsg.errMessage(err.message, err, res, err.statusCode);
+    return sendMsg.errMessage(err.message, err, res, err.statusCode);
+  }
+}
+
+
+exports.getFriendBlogCommentCount = async (req, res) => {
+  try {
+    const { blog_id } = req.params;
+    const q = `select count(reply_id) as comment_count from comment_system where blog_id = ? group by blog_id`;
+    const [result] = await pool.query(q, blog_id);
+    return sendMsg.successMessage("success", result, res, 200);
+  } catch (err) {
+    return sendMsg.errMessage(err.message, err, res, err.statusCode);
   }
 }

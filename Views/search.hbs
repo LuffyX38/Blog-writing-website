@@ -41,11 +41,11 @@
                             <li class="list-group-item" id="blogs" onclick="myPosts()" role="button">My posts</li>
                             <li class="list-group-item"><a href="/update-profile" class="text-decoration-none text-body">Update profile</a>
 </li>
-                            <li class="list-group-item"><a href="requests" class="text-decoration-none text-body">Friends</a></li>
+                            <li class="list-group-item"><a href="/manage-friends" class="text-decoration-none text-body">Friends</a></li>
                         </ul>
-             <div class="card-body">
-                <a href="/login" class="card-link">Login</a>
-                <a href="/main" class="card-link" onclick="logout()">logout</a>
+             <div class="card-body" id="logins">
+                {{!-- <a href="/login" class="card-link">Login</a> --}}
+                {{!-- <a href="/main" class="card-link" onclick="logout()">logout</a> --}}
               </div>
                     </div>
                 </div>
@@ -67,16 +67,10 @@
                                     <a class="nav-link" href="/see-users">Add Friend</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="#">Private Blog</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="#">Public Blog</a>
+                                    <a class="nav-link" href="/friends-blogs">Private Blog</a>
                                 </li>
                             </ul>
-                            <form class="form-inline my-2 my-lg-0" id="searchForm"> 
-                                <input class="form-control mr-sm-2" type="search" placeholder="Search username" aria-label="Search" id="searched">
-                                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="search">Search</button>
-                            </form>
+                            
                         </div>
                     </nav>
                     <h2 id="results"></h2>
@@ -93,7 +87,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <script>
 
- 
+    
+
 
     const myPosts = () =>{
         console.log("this are my posts");
@@ -110,6 +105,16 @@
     .then(res => {
        // name,bio,imgsr
        const profile = res.result.profile;
+
+        if(profile.email){
+         document.getElementById("logins").innerHTML = 
+         `<a href="/main" class="card-link" onclick="logout()">logout</a>`;
+       }else{
+        //document.getElementById("loginBtn").style.display = "inline-block";
+        document.getElementById("logins").innerHTML = 
+        `<a href="/login" class="card-link" id="loginBtn">Login</a>`;
+       }
+
        //document.getElementById("blogs").innerText = `Blogs ${profile.blog_count}`;
        document.getElementById("name").innerText = profile.username;
        document.getElementById("bio").innerText = profile.bio;

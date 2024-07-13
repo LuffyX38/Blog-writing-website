@@ -59,9 +59,9 @@
                             <li class="list-group-item"><a href="/manage-friends" class="text-decoration-none text-body">Friends <span class="badge text-bg-secondary" id="penReq" style="background-color: yellow; display: inline;">New</span>
                             </a></li>
                         </ul>
-             <div class="card-body">
-                <a href="/login" class="card-link">Login</a>
-                <a href="/main" class="card-link" onclick="logout()">logout</a>
+             <div class="card-body" id="logins">
+                {{!-- <a href="/main" class="card-link" onclick="logout()">logout</a> --}}
+                {{!-- <a href="/login" class="card-link" id="loginBtn">Login</a> --}}
               </div>
                     </div>
                 </div>
@@ -85,9 +85,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="/friends-blogs">Private Blog</a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="#">Public Blog</a>
-                                </li>
+                                
                             </ul>
                             <form class="form-inline my-2 my-lg-0" id="searchForm"> 
                                 <input class="form-control mr-sm-2" type="search" placeholder="Search username" aria-label="Search" id="searched">
@@ -165,6 +163,15 @@
        // name,bio,imgsr
        const profile = res.result.profile;
        //document.getElementById("blogs").innerText = `Blogs ${profile.blog_count}`;
+       //console.log(res);
+       if(profile.email){
+         document.getElementById("logins").innerHTML = 
+         `<a href="/main" class="card-link" onclick="logout()">logout</a>`;
+       }else{
+        //document.getElementById("loginBtn").style.display = "inline-block";
+        document.getElementById("logins").innerHTML = 
+        `<a href="/login" class="card-link" id="loginBtn">Login</a>`;
+       }
        document.getElementById("name").innerText = profile.username;
        document.getElementById("bio").innerText = profile.bio;
        const img = profile.profilePicture ? profile.profilePicture : "Public/img/users/default.jpg";
@@ -201,7 +208,7 @@
                 </div>
                 <div class="card-footer text-body-secondary">
                 <button class="btn btn-primary btn-sm" onclick="openComments(${item.blog_id},${item.comment_count})" id="${item.blog_id}openCommentBtn">Comments <span class="badge badge-light" id="${item.blog_id}spanCount">${item.comment_count}</span></button>
-                    <button class="btn btn-primary btn-sm" onclick="giveLike(${item.blog_id})"><p id="${item.blog_id}likeBtn" style="display:inline">🤍</p> <span class="badge badge-light" id="${item.blog_id}likeCount">${item.likes}</span></button>
+                <button class="btn btn-primary btn-sm" onclick="giveLike(${item.blog_id})" id="${item.blog_id}givLikeBtn"><p id="${item.blog_id}likeBtn" style="display:inline">🤍</p> <span class="badge badge-light" id="${item.blog_id}likeCount">${item.likes}</span></button>
                     ${item.created_time_ago}
                    
 
@@ -249,16 +256,17 @@
  fetch(`/api/v1/auth/blogs-like-status`)
  .then(res => res.json())
  .then(res => {
+    //console.log(res,"********");
     res.result.forEach(item =>{
         
        // console.log(item.liked,item.blog_id);
        let status = "🤍";
-       console.log(item.liked);
+       //console.log(item.liked);
         if(item.liked && item.liked === "1"){
             status = "🩷"
             
         }
-            console.log(status);
+            //console.log(status);
         if(document.getElementById(`${item.blog_id}likeBtn`) !== null){
             document.getElementById(`${item.blog_id}likeBtn`).innerText = status;
         }
@@ -270,6 +278,7 @@
  likeStatus();
 
  const giveLike = (blog_id) =>{
+    document.getElementById(`${blog_id}givLikeBtn`).disabled = true;
     fetch("/api/v1/auth/post-like",{
         method:"POST",
         headers:{
@@ -278,9 +287,18 @@
         body:JSON.stringify({blog_id})
     })
     .then(res => res.json())
-    .then(res => console.log(res))
-    .catch(err => console.error(err))
+    .then(res => {
+        //console.log(res.message);
+        if(res.message === `Your'e not logged in!!`){
+            alert(`Your'e not logged in!!`);
+        }
+    })
+    .catch(err => {
+        //console.error(err);
+    })
     .finally(()=>{
+                document.getElementById(`${blog_id}givLikeBtn`).disabled = false;
+
         getIndividualLike(blog_id);
     })
  }
@@ -291,7 +309,7 @@
     .then(res => res.json())
     .then(res => {
         //🤍🩷
-        console.log(res.result[0].likes);
+        //console.log(res.result[0].likes);
         document.getElementById(`${blog_id}likeCount`).innerText = res.result[0].likes;
         //document.getElementById(`${blog_id}likeCount`).innerText = res.result[0].likes;
         if(document.getElementById(`${blog_id}likeBtn`).innerText === "🤍"){
@@ -300,7 +318,11 @@
             document.getElementById(`${blog_id}likeBtn`).innerText = "🤍";
         }
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error(err))
+    .finally(()=>{
+                //document.getElementById(`${blog_id}givLikeBtn`).disabled = false;
+
+    });
       }
 
   //  document.getElementById("getMessagesId").innerHTML = "";

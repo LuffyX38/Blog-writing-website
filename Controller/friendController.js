@@ -188,8 +188,14 @@ exports.userProfile = async (req, res) => {
   // console.log(req.params.user_id,"***************************************************");
   // return res.status(200).json({ result: req.params.user_id });
   try {
-      const user_id = req.params.user_id;
-
+    const user_id = req.params.user_id;
+    
+    const [result] = await pool.query(`select * from user where id = ?`, [user_id]);
+    if (!result.length) {
+      return res.status(200).redirect("/no-user-found");
+      //userInfo[0].reqid = null;
+      //userInfo[0].status = null;
+    }
      if (!req.user) 
       {
          const [userInfo] = await pool.query(
@@ -197,6 +203,7 @@ exports.userProfile = async (req, res) => {
            [user_id]
          );
 
+       
          userInfo[0].reqid = null;
          userInfo[0].status = null;
 
@@ -207,7 +214,7 @@ exports.userProfile = async (req, res) => {
       `SELECT id,backgroundPicture,bio,birthDate,createdAt,email,profilePicture,username FROM user WHERE id = ?`,
       [user_id]
     );
-
+    
         const q = `select * from friend_request where (req_by = ? and req_to = ?) or (req_by = ? and req_to = ?)`;
 
         const [userStatus] = await pool.query(q, [

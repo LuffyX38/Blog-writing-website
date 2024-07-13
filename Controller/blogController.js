@@ -167,11 +167,17 @@ exports.getFriendsPublicPrivateBlog = async (req, res) => {
     if (!req.user) {
       throwsError(`Your'e not logged in`, 400);
     }
-    const q = `select u.username,u.id as friend_id,b.blog,b.blog_head,b.bloogger_id,b.available_to,b.created_at from friends as f 
+  const loadCount = parseInt(req.query.loadCount);
+    const q = `select b.likes,b.blog_id,u.username,u.id as friend_id,b.blog,b.blog_head,b.bloogger_id,b.available_to,b.created_at from friends as f 
               left join user as u on f.user_id1 = u.id or f.user_id2 = u.id left join blogs as b on u.id = b.bloogger_id
               where (f.user_id1 = ? or f.user_id2 = ?) and not (u.id = ?) and blog is not null and b.delete_blog = 0
-              order by b.created_at desc;`;
-    const [result] = await pool.query(q, [req.user.id, req.user.id, req.user.id]);
+              order by b.created_at desc limit 5 offset ?`;
+    const [result] = await pool.query(q, [
+      req.user.id,
+      req.user.id,
+      req.user.id,
+      loadCount,
+    ]);
     const blogsWithTime = result.map(item => {
       return {
         ...item,
@@ -185,3 +191,4 @@ exports.getFriendsPublicPrivateBlog = async (req, res) => {
          errMessage(err.message, err, res, err.statusCode);
   }
 }
+

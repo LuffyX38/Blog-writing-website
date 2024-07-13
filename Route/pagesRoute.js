@@ -7,6 +7,7 @@ router.get("/main", authController.isSignedIn, (req, res) => {
   res.render("index");
 });
 
+
 router.get("/create", authController.isSignedIn, (req, res) => {
   res.render("createblog");
 });
@@ -20,6 +21,10 @@ router.get("/register", authController.isSignedIn, (req, res) => {
 });
 
 router.get("/login", authController.isSignedIn, (req, res) => {
+  if (req.user) {
+    res.render("index");
+    return;
+  }
   res.render("login");
 });
 
@@ -59,6 +64,10 @@ router.get(
   authController.isSignedIn,
   friendController.userProfile
 );
+
+router.get("/no-user-found", (req, res) => {
+  res.render("no-user-found");
+});
 
 router.get("/requests", (req, res) => {
   res.render("requests");
